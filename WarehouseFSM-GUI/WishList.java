@@ -14,10 +14,11 @@ public class WishList {
         this.client = client;
     }
 
+    // ADD PRODUCT
     // Store the requested quantity without reserving inventory stock.
     public boolean addProduct(Product product, int quantity) {
 
-        if (quantity <= 0) {
+        if (product == null || quantity <= 0) {
             return false;
         }
 
@@ -37,7 +38,40 @@ public class WishList {
         return true;
     }
 
-    // Automatically purchase available quantities
+    // REMOVE PRODUCT
+    public boolean removeProduct(String productID) {
+
+        Iterator<WishListItem> iterator = items.iterator();
+
+        while (iterator.hasNext()) {
+
+            WishListItem item = iterator.next();
+
+            if (item.getProduct().getProductID().equals(productID)) {
+                iterator.remove();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // MODIFY PRODUCT QUANTITY
+    public boolean updateQuantity(
+            String productID,
+            int quantity) {
+
+        WishListItem item = findProduct(productID);
+
+        if (item == null || quantity <= 0) {
+            return false;
+        }
+
+        item.setQuantity(quantity);
+        return true;
+    }
+
+    // AUTOMATICALLY PURCHASE AVAILABLE QUANTITIES
     // and waitlist quantities that are unavailable.
     public void purchase() {
 
@@ -71,7 +105,7 @@ public class WishList {
             int waitlistedQuantity =
                 requestedQuantity - purchasedQuantity;
 
-            // Process purchased quantity.
+            // PROCESS PURCHASED QUANTITY
             if (purchasedQuantity > 0) {
 
                 if (transaction == null) {
@@ -92,7 +126,7 @@ public class WishList {
                 );
             }
 
-            // Process unavailable quantity.
+            // PROCESS UNAVAILABLE QUANTITY
             if (waitlistedQuantity > 0) {
 
                 product.addToWaitlist(
@@ -106,11 +140,11 @@ public class WishList {
                 );
             }
 
-            // Remove processed item from wishlist.
+            // REMOVE PROCESSED ITEM FROM WISHLIST
             iterator.remove();
         }
 
-        // Save transaction and update client balance.
+        // SAVE TRANSACTION AND UPDATE CLIENT BALANCE
         if (transaction != null) {
 
             client.addTransaction(transaction);
@@ -124,6 +158,7 @@ public class WishList {
         System.out.println("\nOrder processing completed.");
     }
 
+    // FIND PRODUCT
     public WishListItem findProduct(String productID) {
 
         for (WishListItem item : items) {
@@ -139,29 +174,12 @@ public class WishList {
         return null;
     }
 
-    public boolean updateQuantity(
-            String productID,
-            int quantity) {
-
-        WishListItem item =
-            findProduct(productID);
-
-        if (item == null) {
-            return false;
-        }
-
-        if (quantity <= 0) {
-            return false;
-        }
-
-        item.setQuantity(quantity);
-        return true;
-    }
-
+    // GET WISHLIST ITEMS
     public Iterator<WishListItem> getWishlistItems() {
         return items.iterator();
     }
 
+    // VIEW WISHLIST
     public String viewWishlist() {
         return toString();
     }
@@ -172,6 +190,11 @@ public class WishList {
         StringBuilder productsString = new StringBuilder();
 
         productsString.append("\n===== WISHLIST =====\n");
+
+        if (items.isEmpty()) {
+            productsString.append("Wishlist is empty.\n");
+            return productsString.toString();
+        }
 
         for (WishListItem item : items) {
 
